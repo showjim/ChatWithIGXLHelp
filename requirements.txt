@@ -1,0 +1,5 @@
+python-dotenv
+Flask
+OpenAI
+llama_index
+langchain

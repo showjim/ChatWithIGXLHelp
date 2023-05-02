@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatWIthIGXLHelp</title>
+    <meta name="viewport"
+          content="width=device-width,height=device-height, user-scalable=no,initial-scale=1, minimum-scale=1, maximum-scale=1,target-densitydpi=device-dpi ">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.51.3/dist/full.css" rel="stylesheet" type="text/css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="container">
+    <div class="flex flex-col items-center h-screen w-screen">
+        <div class="flex flex-col items-center justify-center">
+<!--            <h1 class="text-5xl font-bold mt-20">Chat With IG-XL Help (Demo)</h1>-->
+            <h1 class="text-5xl font-bold mt-20">Chat With <del>IGXLHelp</del> Your PDF File (Demo)</h1>
+<!--            <p class="text-xl my-10">Talk with IG-XL Help in Natural Language</p>-->
+            <p class="text-xl my-10">Talk with <del>IG-XL Help</del> PDF in Natural Language</p>
+        </div>
+        <div class="flex flex-row items-center justify-center w-full">
+            <input id="search" type="text" placeholder="Please ask your question on UFP instruments only"
+                   class="input input-bordered w-2/3 lg:w-2/5 mr-2"/>
+            <button class="btn btn-primary flex items-center justify-center">
+                <span id="submit-text">Submit</span>
+                <svg id="loading" class="animate-spin h-5 w-5 ml-2 text-white" style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Add the upload button here -->
+        <div class="flex flex-row items-center justify-center w-full mt-5">
+            <form action="/" method="POST" enctype="multipart/form-data">
+                <input type="file" id="pdfUpload" name="pdf" accept="application/pdf" class="hidden mr-2"/>
+                <label for="pdfUpload" class="btn btn-primary">Select PDF...</label>
+                <input type="submit" value="Upload" class="btn btn-primary text-black ml-2"/>
+            </form>
+        </div>
+        <p id="pdfFilePath" class="mt-2 text-lg"></p>
+        <!-- End of the upload button code -->
+        <div class="flex flex-col justify-start mt-10 mx-5">
+            <div class="card bg-base-100 shadow-md">
+                <div class="card-body">
+                    <h2 class="card-title">AI Resp</h2>
+                    <p class="text-lg" id="answer" style="white-space: pre-line"></p>
+                    <div class="card-actions justify-start" id="tags">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const submitButton = document.querySelector('button');
+    const search = document.querySelector('#search');
+    const card = document.querySelector('.card');
+    const loading = document.querySelector('#loading');
+    const submitText = document.querySelector('#submit-text');
+    card.style.display = 'none';
+    function submitSearch() {
+        loading.style.display = 'block';
+        submitText.style.display = 'none';
+        const data = {
+            search: search.value,
+        };
+        fetch('/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(res => res.json()).then(data => {
+            loading.style.display = 'none';
+            submitText.style.display = 'block';
+            card.style.display = 'block';
+            document.querySelector('#answer').innerHTML = data.data.answer;
+            document.querySelector('#tags').innerHTML = data.data.tags.map(tag => `<div class="badge badge-primary badge-outline">${tag}</div>`).join('');
+        }).catch(error => {
+            loading.style.display = 'none';
+            submitText.style.display = 'block';
+            console.error('Error:', error);
+        });
+    }
+
+    submitButton.addEventListener('click', submitSearch);
+
+    // Add the event listener for the 'keydown' event
+    search.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            submitSearch();
+        }
+    });
+
+    // Add this code block to trigger the file input when clicking the "Upload PDF" button
+    document.querySelector('label[for="pdfUpload"]').addEventListener('click', (event) => {
+        event.preventDefault();
+        document.getElementById('pdfUpload').click();
+    });
+
+    // Add this code block to display the file path when a file is selected
+    document.getElementById('pdfUpload').addEventListener('change', (event) => {
+        const filePathElement = document.getElementById('pdfFilePath');
+        if (event.target.files.length > 0) {
+            filePathElement.textContent = `Selected file: ${event.target.files[0].name}`;
+        } else {
+            filePathElement.textContent = '';
+        }
+    });
+
+    // Check if there's an uploaded file and display its name
+    const uploadedFilePathElement = document.getElementById('pdfFilePath');
+    const uploadedFileName = "{{ uploaded_file }}";
+    if (uploadedFileName) {
+        uploadedFilePathElement.textContent = `Uploaded PDF: ${uploadedFileName}`;
+    }
+</script>
+</body>
+</html>
