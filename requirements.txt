@@ -1,5 +1,5 @@
 python-dotenv
 Flask
 OpenAI
-llama_index
+llama_index==0.5.21
 langchain
